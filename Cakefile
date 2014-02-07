@@ -53,6 +53,11 @@ task 'build', 'Build application from source files', ->
     if not itExists then fs2.mkdirp 'bin/img'
     fs2.copy 'src/img', 'bin/img', (err) ->
       throw err if err
+  sys.puts 'Copying jquery'
+  fs.exists 'lib/jquery-1.4.4.js', (itExists) ->
+    if not itExists then throw 'could not find jquery js file'
+    fs2.copy 'lib/jquery-1.4.4.js', 'bin/js/jquery-1.4.4.js', (err) ->
+      throw err if err
 # fs.createReadStream('test.log').pipe(fs.createWriteStream('newLog.log'));
   sys.puts 'Compiling CoffeeScript files'
   fs.exists 'bin/js', (itExists) -> 
