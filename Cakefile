@@ -1,6 +1,7 @@
 sys    = require 'sys'
 fs     = require 'fs'
 {exec} = require 'child_process'
+fs2	   = require('node-fs-extra')
 
 buildFiles = [
   "Constants",
@@ -24,31 +25,38 @@ buildFiles = [
 
 task 'build', 'Build application from source files', ->
   sys.puts 'Compiling HAML files'
-  exec 'mkdir bin', ->
+  fs.exists 'bin', (itExists) -> 
+    if not itExists then fs2.mkdirp 'bin'
     fs.readdir 'src/', (err, files) ->
       for file in files
         continue unless file.match /haml$/
         newFile = file.replace /haml/g, 'html'
+        sys.puts "compiling src/#{file}"
         exec "haml -f html5 src/#{file} bin/#{newFile}", (err) ->
           throw err if err
 
   sys.puts 'Compiling SASS files'
-  exec 'mkdir bin/css', ->
-    exec 'mkdir src/css', ->
+  fs.exists 'bin/css', (itExists) -> 
+    if not itExists then fs2.mkdirp 'bin/css'
+    fs.exists 'src/css', (itExists) -> 
+      if not itExists then fs2.mkdirp 'src/css'
       fs.readdir 'src/css', (err, files) ->
         for file in files
           continue unless file.match /s(c|a)ss$/
           newFile = file.replace /s(c|a)ss/g, 'css'
+          sys.puts "compiling src/css/#{file}"
           exec "sass src/css/#{file} bin/css/#{newFile}", (err) ->
             throw err if err
 
   sys.puts 'Copying images'
-  exec 'mkdir bin/img/', ->
-    exec 'cp src/img/* bin/img/', (err) ->
+  fs.exists 'bin/img', (itExists) -> 
+    if not itExists then fs2.mkdirp 'bin/img'
+    fs2.copy 'src/img', 'bin/img', (err) ->
       throw err if err
-
+# fs.createReadStream('test.log').pipe(fs.createWriteStream('newLog.log'));
   sys.puts 'Compiling CoffeeScript files'
-  exec 'mkdir bin/js', ->
+  fs.exists 'bin/js', (itExists) -> 
+    if not itExists then fs2.mkdirp 'bin/js'
     appContents = new Array remaining = buildFiles.length
     counter = 0
     for file in buildFiles
@@ -57,6 +65,7 @@ task 'build', 'Build application from source files', ->
         appContents[counter++] = fileContents
         process() unless --remaining
     process = ->
+      sys.puts 'Writing bin/js/marbleous.coffee'
       fs.writeFile 'bin/js/marbleous.coffee', appContents.join('\n\n'), 'utf8', (err) ->
         throw err if err
         exec 'coffee --compile bin/js/marbleous.coffee', (err, stdout, stderr) ->
@@ -71,7 +80,8 @@ task 'build', 'Build application from source files', ->
 #       to make sure the testing server is set up properly
 task 'test', 'Compile the app for testing, try opening a browser', ->
   sys.puts 'Compiling CoffeeScript files for test'
-  exec 'mkdir -p test/js'
+  fs.exists 'test/js', (itExists) -> 
+    if not itExists then fs2.mkdirp 'test/js'
 
   appContents = new Array remaining = buildFiles.length
   counter = 0
@@ -108,6 +118,6 @@ task 'minify', 'Minify the resulting application file after build', ->
 
   copy = ->
     sys.puts "Overwriting old version with result"
-    exec 'mv -vf bin/js/marbleous-min.js bin/js/marbleous.js', (err, stdout, stderr) ->
-      throw err if err
-      sys.print stdout + stderr
+    fs.exists 'test/js', (itExists) -> 
+	  if itExists then fs.rename 'bin/js/marbleous-min.js', 'bin/js/marbleous.js', (err) ->
+        throw err if err
