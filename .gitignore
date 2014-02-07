@@ -2,3 +2,4 @@
 bin/
 .sass-cache
 test/js/
+node_modules
