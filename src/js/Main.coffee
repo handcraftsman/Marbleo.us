@@ -8,7 +8,7 @@ $(document).ready ->
         compressor.decompress window.location.hash.slice(1), @game.map
         @game.updateCanvasMargin()
       catch e
-        console.error "Coudl not parse map correctly: #{e}" if DEBUG
+        console.error "Could not parse map correctly: #{e}" if DEBUG
 
     @game.updateButton()
 
