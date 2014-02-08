@@ -35,7 +35,7 @@ Settings =
   gravity:            0.7
   blockDampening:     0.3
   groundDampening:    0.3
-  friction:           0.995
+  friction:           0.980
   blockSize:          50
 
 # # Global helper methods
